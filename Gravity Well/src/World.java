@@ -104,7 +104,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
     
     public BufferedImage gravityWellImg,spaceShipImg,tempSpaceShipImg,currentSpaceShipImg,spaceShipMovingImg,spaceBackground1,planet1,currentPlanet1Img,tempPlanet1Img,matterImage;
     ImageIcon startButtonI,startButtonIRO,menuButtonI,menuButtonIRO,simulatorButtonI,simulatorButtonIRO,optionsButtonI,optionsButtonIRO;
-    public final String imgDir = "/Users/Zachariah/CodingStuff/Gravity Well/src/Pictures/";
+    public final String imgDir = "A:/Programs/Git/Repository/GravityWell/Gravity Well/src/Pictures/GravityLogo_5.png";
     public String[] imgNames = {"AddEndGate","AddMoon","AddPlanet","AddStartGate","Back","Back","Back","Delete","Launch","Menu","Options","Retry","Simulator","Start","Start","Run","Stop","Pause","Help","AddOribit","Delete"};
     							  
     Level levels = new Level();
@@ -194,8 +194,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	 public void loadImages()
 	 {
 		 try{
-			 gravityWellImg = ImageIO.read(new File(imgDir+"GravityLogo_5.png"));
-			 spaceBackground1 =ImageIO.read(new File(imgDir+"potentialBackground_1.png"));
+			 gravityWellImg = ImageIO.read(new File("A:/Programs/Git/Repository/GravityWell/Gravity Well/Images/GravityLogo_5.png"));
+			 spaceBackground1 =ImageIO.read(new File("A:/Programs/Git/Repository/GravityWell/Gravity Well/src/Pictures/potentialBackground1.png"));
 		 }
 		 catch(IOException e){
 			 e.printStackTrace();

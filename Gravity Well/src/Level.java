@@ -20,7 +20,7 @@ public class Level
 	public float[][] tempLevel= {{1f,0f,0f,30000f,40f,0},{10}};
 	public int currentLevelNum;
 	BufferedImage img;
-	public final String imgDir = "/Users/Zachariah/CodingStuff/Gravity Well/src/Pictures/";
+	public final String imgDir = "/Images/";
 	public BufferedImage gravityWellImg,spaceShipImg,tempSpaceShipImg,currentSpaceShipImg,spaceShipMovingImg,spaceBackground1,planet1,currentPlanet1Img,tempPlanet1Img;
 	public String[] planetNames = {"Planet1"};
 	public String[] shipNames = {"SpaceShip","SpaceShip2"};
@@ -33,7 +33,7 @@ public class Level
 	public Level()
 	{
 		loadLevels();
-		loadImages();
+		//loadImages();
 	}
 	public void makeLevel(int levelNum)
 	{
@@ -84,20 +84,20 @@ public class Level
 		 try{
 			 for(int i=0;i<planetNames.length;i++)
 			 {
-				 BufferedImage planetImage = ImageIO.read(new File(imgDir+planetNames[i]+".png"));
+				 BufferedImage planetImage = ImageIO.read(getClass().getResource(imgDir+planetNames[i]+".png"));
 				 planetImages.add(planetImage);
 			 }
 			 for(int i=0;i<moonNames.length;i++)
 			 {
-				 BufferedImage moonImage = ImageIO.read(new File(imgDir+moonNames[i]+".png"));
+				 BufferedImage moonImage = ImageIO.read(getClass().getResource(imgDir+moonNames[i]+".png"));
 				 moonImages.add(moonImage);
 			 }
 			 for(int i=0;i<shipNames.length;i++)
 			 {
-				 BufferedImage shipImage = ImageIO.read(new File(imgDir+shipNames[i]+".png"));
-				 BufferedImage shipRightImage = ImageIO.read(new File(imgDir+shipNames[i]+"Right.png"));
-				 BufferedImage shipLeftImage = ImageIO.read(new File(imgDir+shipNames[i]+"Left.png"));
-				 BufferedImage shipMovingImage = ImageIO.read(new File(imgDir+shipNames[i]+"Moving.png"));
+				 BufferedImage shipImage = ImageIO.read(getClass().getResource(imgDir+shipNames[i]+".png"));
+				 BufferedImage shipRightImage = ImageIO.read(getClass().getResource(imgDir+shipNames[i]+"Right.png"));
+				 BufferedImage shipLeftImage = ImageIO.read(getClass().getResource(imgDir+shipNames[i]+"Left.png"));
+				 BufferedImage shipMovingImage = ImageIO.read(getClass().getResource(imgDir+shipNames[i]+"Moving.png"));
 				 shipImages.add(shipImage);
 				 shipImages.add(shipRightImage);
 				 shipImages.add(shipLeftImage);
@@ -105,12 +105,12 @@ public class Level
 			 }
 			 for(int i=0;i<backGroundNames.length;i++)
 			 {
-				 BufferedImage backGroundImage = ImageIO.read(new File(imgDir+backGroundNames[i]+".png"));
+				 BufferedImage backGroundImage = ImageIO.read(getClass().getResource(imgDir+backGroundNames[i]+".png"));
 				 backGroundImages.add(backGroundImage);
 			 }
 			 for(int i=0;i<gateNames.length;i++)
 			 {
-				 BufferedImage gateImage = ImageIO.read(new File(imgDir+gateNames[i]+".png"));
+				 BufferedImage gateImage = ImageIO.read(getClass().getResource(imgDir+gateNames[i]+".png"));
 				 gateImages.add(gateImage);
 			 }
 		 }
