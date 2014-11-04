@@ -167,7 +167,8 @@ public class SpaceMatter
 				force = target.getMass()/(distance*distance)*.01f;
 				angle = (double) Math.atan2( target.getLocY()-pva[1][0],target.getLocX()-pva[0][0]);
 				accel[0]+=force*Math.cos(angle);
-				accel[1]+=force*Math.sin(angle);}
+				accel[1]+=force*Math.sin(angle);
+			}
    		 }
 		 return accel;
 	}

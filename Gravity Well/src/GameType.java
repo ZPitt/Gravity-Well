@@ -96,7 +96,6 @@ public class GameType {
 					SpaceMatter.SpaceObjects.get(clickedOnIndex).updateMatter();
 					viewPort.calculateDimensions();
 				}
-				projectingPath();
 			}
 			if(currentType==0)
 			{
@@ -114,11 +113,6 @@ public class GameType {
 							   ((StartGate)spaceThing).setFinalVelLoc(viewPort.translateToWorldCooridinatesX((float)b.getX()-World.screenLocW-2),
 									   viewPort.translateToWorldCooridinatesY((float)b.getY()-World.screenLocH-26));
 						   }
-						   if(spaceThing instanceof Spaceship) // this counteracts the couple of updates that happen after the gameState has been switched
-						   {
-//							   spaceThing.setAccel(0, 0);
-//							   spaceThing.setInitialVelocity(0, 0);
-						   }
 				   }
 		   }
 		   if(draggingScreen)
@@ -131,26 +125,31 @@ public class GameType {
 		}
 		else if(currentState.equals(PLAYING)){
 			for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++){
-				SpaceMatter spaceThing = SpaceMatter.SpaceObjects.get(i);
-			 if((spaceThing instanceof Planet)){
-				   ((Planet) spaceThing).updateForces();
-			   }
-			   if(spaceThing instanceof Spaceship){
-				   ((Spaceship) spaceThing).updateForces(); 
-			   }
+				 SpaceMatter spaceThing = SpaceMatter.SpaceObjects.get(i);
+				 
+				 if((spaceThing instanceof Planet)){
+					   ((Planet) spaceThing).updateForces();
+				 }
+				 if(spaceThing instanceof Spaceship){
+					   ((Spaceship) spaceThing).updateForces(); 
+				 }
 			}
+
 		}
 		
 	}
-	public void projectingPath()
+	public void projectPath()
 	{
 		for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++){
 			SpaceMatter spaceThing = SpaceMatter.SpaceObjects.get(i);
-	
+		 if((spaceThing instanceof Planet)){
+			   ((Planet) spaceThing).updateForces();
+		   }
 		   if(spaceThing instanceof Spaceship){
 			   ((Spaceship) spaceThing).updateForces(); 
 		   }
 		}
+		SpaceMatter.SpaceObjects.get(0).updateMatter();
 	}
 	public void updatePlaying(){
 		

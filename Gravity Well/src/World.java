@@ -104,7 +104,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
     
     public BufferedImage gravityWellImg,spaceShipImg,tempSpaceShipImg,currentSpaceShipImg,spaceShipMovingImg,spaceBackground1,planet1,currentPlanet1Img,tempPlanet1Img,matterImage;
     ImageIcon startButtonI,startButtonIRO,menuButtonI,menuButtonIRO,simulatorButtonI,simulatorButtonIRO,optionsButtonI,optionsButtonIRO;
-    public final String imgDir = "A:/Programs/Git/Repository/GravityWell/Gravity Well/src/Pictures/GravityLogo_5.png";
+    public final String imgDir = "Images/";
     public String[] imgNames = {"AddEndGate","AddMoon","AddPlanet","AddStartGate","Back","Back","Back","Delete","Launch","Menu","Options","Retry","Simulator","Start","Start","Run","Stop","Pause","Help","AddOribit","Delete"};
     							  
     Level levels = new Level();
@@ -194,8 +194,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	 public void loadImages()
 	 {
 		 try{
-			 gravityWellImg = ImageIO.read(new File("A:/Programs/Git/Repository/GravityWell/Gravity Well/Images/GravityLogo_5.png"));
-			 spaceBackground1 =ImageIO.read(new File("A:/Programs/Git/Repository/GravityWell/Gravity Well/src/Pictures/potentialBackground1.png"));
+			 gravityWellImg = ImageIO.read(new File(imgDir+"GravityLogo_5.png"));
+			 spaceBackground1 =ImageIO.read(new File(imgDir+"potentialBackground_1.png"));
 		 }
 		 catch(IOException e){
 			 e.printStackTrace();
@@ -413,8 +413,6 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++)
 		{
 			if(SpaceMatter.getSpaceObjects().get(i).checkSelected()){
-			//	if(SpaceMatter.SpaceObjects.get(i) instanceof StartGate)
-					//
 				return SpaceMatter.getSpaceObjects().get(i);
 				}
 			
@@ -774,14 +772,13 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	 public void projectedPath()
 	 {
 		 int count=0;
+		 
 		 createPlayerShip();
 		 getStartGate().launchSpaceShip(getPlayerShip());
-		 System.out.print(getPlayerShip().getPosVelAccel()[0][0]+", ");
-		 System.out.print(getPlayerShip().getPosVelAccel()[1][0]);
-		 System.out.println("");
-		 while(count<500)
+
+		 while(count<1000) //how many steps it takes, and might add additional constraint of collision detection too if not too expensive
 		 {
-			 currentGameType.update(viewPort);
+			 currentGameType.projectPath();
 			 count++;
 		 }
 		pathX = new int[count];
@@ -789,6 +786,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		pathY = new int[count];
 		pathY = getPlayerShip().getPathY(viewPort);
 		SpaceMatter.SpaceObjects.remove(0);
+
+		
 	 }
 	   private void updateGame()
 	   {
@@ -972,6 +971,11 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 				             at.rotate(matter.getRotation());
 				             at.translate(-matter.getCurrentImageSize()/2,-matter.getCurrentImageSize()/2);
 				             g.drawImage(matterImage, at, null);
+				             if(currentGameType.getGameType()==0){
+				            	 g.setColor(Color.WHITE);
+				            	 g.drawPolyline(((Spaceship) matter).getPathX(viewPort), ((Spaceship) matter).getPathY(viewPort), 
+				            			 ((Spaceship) matter).getPathX(viewPort).length);
+				             }
 	    		 		}
 	    		 		else if(matter instanceof EndGate)
 	    		 		{
@@ -988,6 +992,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	    	 if(currentGameType.getGameType()==1&&getStartGate()!=null){
 	    		 	g.setColor(Color.GREEN);
 	    		 	g.drawPolyline(pathX,pathY,pathX.length);
+	    		 	
 	    		 }
 	    	 if(currentGameType.getGameState().equals(GameType.LOST)){
 	    		g.setColor(new Color(192,192,192,200));
