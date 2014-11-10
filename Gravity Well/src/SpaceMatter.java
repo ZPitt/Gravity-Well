@@ -26,6 +26,8 @@ public class SpaceMatter
 	BufferedImage matterImage,currentImage;
 	public double rot;
 	public int currentImageSize;
+	public Velocity velocity;
+	
 	
 	AffineTransform transform = new AffineTransform();
 	static ArrayList<SpaceMatter> SpaceObjects = new ArrayList<SpaceMatter>();
@@ -42,7 +44,7 @@ public class SpaceMatter
 		r=radius;
 		isActive=true;
 		matterImage=img;
-		
+		velocity = new Velocity(0,0);
 	}
 	public float getLocX()
 	{
@@ -98,17 +100,21 @@ public class SpaceMatter
 			pva[1][1]=pva[1][1]*friction;					
 		}
 	}
+	public Velocity getVelocity()
+	{
+		return velocity;
+	}
+	public void setVelocity(Velocity v)
+	{
+		velocity = v;
+		pva[0][1]=velocity.getX()/20;
+		pva[1][1]=velocity.getY()/20;
+	}
 	public void addVelocity(Float xVelocity, Float yVelocity)
 	{
 		pva[0][1]=pva[0][1]+xVelocity;
 		pva[1][1]=pva[1][1]+yVelocity;
 
-	}
-	public void setInitialVelocity(float xInitial, float yInitial)
-	{
-		
-		pva[0][1]=xInitial;
-		pva[1][1]=yInitial;
 	}
 	public int getCurrentImageSize()
 	{

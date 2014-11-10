@@ -44,7 +44,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	private int frameCount = 0;
 	public int x,y,z,rad,mass;
 	
-	private boolean up,down,right,left,somethingSelected,running,paused;
+	private boolean up,down,right,left,somethingSelected,running,paused,isPathing;
 	
 	public float worldX,worldY,zoomFactor,xf,yf;
 	
@@ -496,7 +496,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		}
 		if(e.getKeyCode()==KeyEvent.VK_D){
 			SpaceMatter.getSpaceObjects().get(0).setPosition(10f,10f);
-			SpaceMatter.getSpaceObjects().get(0).setInitialVelocity(0f,0f);
+			SpaceMatter.getSpaceObjects().get(0).setVelocity(new Velocity(0,0));
 		}
 	}
 	@Override
@@ -542,8 +542,10 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 					for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++)
 					{
 						if(SpaceMatter.getSpaceObjects().get(i) instanceof StartGate){ //checks to see if its clicked on and startGate
-							((StartGate)SpaceMatter.getSpaceObjects().get(i)).setFinalVelLoc(worldPointX, worldPointY);
+							StartGate sGate =((StartGate)SpaceMatter.getSpaceObjects().get(i));
+							sGate.getVelocity().setVelocity(worldPointX-sGate.getLocX(), worldPointY-sGate.getLocY());
 							SpaceMatter.getSpaceObjects().get(i).setSelection(true);
+							System.out.println(worldPointX+", "+worldPointY);
 						}
 					}
 			 }
@@ -556,8 +558,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 				
 				if(getSelected() instanceof StartGate)
 				{
-					((StartGate)SpaceMatter.getSpaceObjects().get(getSelectedIndex())).setFinalVelLoc(worldPointX, worldPointY);
-					System.out.println("hittin the booze and don't know what to choose");
+					StartGate sGate = getStartGate();
+					sGate.getVelocity().setVelocity(worldPointX-sGate.getLocX(), worldPointY-sGate.getLocY());
 					
 				}
 			}
@@ -589,6 +591,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 							SpaceMatter.getSpaceObjects().get(k).setSelection(false);
 						}
 						SpaceMatter.getSpaceObjects().get(i).setSelection(true);
+						if(isPathing) // sometimes when you click it will happen in the middle of the pathing calculations and the index will be thrown off, this compensates for that
+							i=i-1;
 						currentGameType.setClickedOnIndex(i);
 						setVisibleStats(true);
 						currentGameType.setDraggingMatter(true);
@@ -711,10 +715,6 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		retryButton.setVisible(false);
 		launchButton.setVisible(true);
 		
-		for(int i=0;i<SpaceMatter.SpaceObjects.size();i++){
-			if(SpaceMatter.SpaceObjects.get(i) instanceof StartGate)
-				((StartGate)SpaceMatter.SpaceObjects.get(i)).setFinalVelLoc(xf,yf);
-			}
 		
 	}
 	 public void lost()
@@ -726,7 +726,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 			 if(SpaceMatter.SpaceObjects.get(i) instanceof Spaceship){
 				 SpaceMatter.SpaceObjects.get(i).setActive(false);
 				 SpaceMatter.SpaceObjects.get(i).setAccel(0,0);
-				 SpaceMatter.SpaceObjects.get(i).setInitialVelocity(0,0);
+				 SpaceMatter.SpaceObjects.get(i).setVelocity(new Velocity(0,0));
 				 System.out.println(SpaceMatter.SpaceObjects.get(i).getPosVelAccel()[0][2]);
 			 }
 		 }
@@ -766,11 +766,15 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	   }
 	 public void createPlayerShip()
 	 {
+		 
 			 Level.makePlayerShip(getStartGate().getLocX(),getStartGate().getLocY());
+			 if(!isPathing)
+				 System.out.println("found you for real this time");
 	 }
 
 	 public void projectedPath()
 	 {
+		 isPathing=true;
 		 int count=0;
 		 
 		 createPlayerShip();
@@ -786,7 +790,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		pathY = new int[count];
 		pathY = getPlayerShip().getPathY(viewPort);
 		SpaceMatter.SpaceObjects.remove(0);
-
+		
+		isPathing=false;
 		
 	 }
 	   private void updateGame()
@@ -966,16 +971,17 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	    		 		}
 	    		 		else if(matter instanceof Spaceship)
 	    		 		{
+	    		 			if(currentGameType.getGameType()==0){
+				            	 g.setColor(Color.WHITE);
+				            	 g.drawPolyline(((Spaceship) matter).getPathX(viewPort), ((Spaceship) matter).getPathY(viewPort), 
+				            			 ((Spaceship) matter).getPathX(viewPort).length);
+				             }
 	    		 			 AffineTransform at = new AffineTransform();
 				             at.translate(x,y);
 				             at.rotate(matter.getRotation());
 				             at.translate(-matter.getCurrentImageSize()/2,-matter.getCurrentImageSize()/2);
 				             g.drawImage(matterImage, at, null);
-				             if(currentGameType.getGameType()==0){
-				            	 g.setColor(Color.WHITE);
-				            	 g.drawPolyline(((Spaceship) matter).getPathX(viewPort), ((Spaceship) matter).getPathY(viewPort), 
-				            			 ((Spaceship) matter).getPathX(viewPort).length);
-				             }
+				             
 	    		 		}
 	    		 		else if(matter instanceof EndGate)
 	    		 		{
@@ -995,12 +1001,22 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	    		 	
 	    		 }
 	    	 if(currentGameType.getGameState().equals(GameType.LOST)){
-	    		g.setColor(new Color(192,192,192,200));
-	    		g.fillRect(0, 0, World.WIDTH, World.HEIGHT);
+	    		 if(currentGameType.getGameType()==0){
+	    			 g.setColor(new Color(192,192,192,200));
+	    			 g.fillRect(0, 0, World.WIDTH, World.HEIGHT);
+	    		 }
+	    		 else{
+	    			 
+	    		 }
 	    	 }
 	    	 else if(currentGameType.getGameState().equals(GameType.WON)){
-	    		 g.setColor(new Color(53,255,153,200));
-		    	 g.fillRect(0, 0, World.WIDTH, World.HEIGHT);
+	    		 if(currentGameType.getGameType()==0){
+		    		 g.setColor(new Color(53,255,153,200));
+			    	 g.fillRect(0, 0, World.WIDTH, World.HEIGHT);
+	    		 }
+	    		 else{
+	    			 
+	    		 }
 	    	 }
 	    	 g.rotate(0);
 	         frameCount++;
@@ -1014,8 +1030,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		if(matter instanceof StartGate){
 			if(currentGameType.getGameState().equals(GameType.VIEWER)){
 					g.setColor(Color.WHITE);
-					xf=((StartGate)matter).getFinalVelX();
-					yf=((StartGate)matter).getFinalVelY();
+					xf=((StartGate)matter).getVelocity().getX()+matter.getLocX();
+					yf=((StartGate)matter).getVelocity().getY()+matter.getLocY();
 					g.drawLine(x,y,viewPort.translateToViewPortX(xf),
 						viewPort.translateToViewPortY(yf));
 			}

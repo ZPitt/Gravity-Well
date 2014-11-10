@@ -16,34 +16,6 @@ public class Gate extends SpaceMatter
 		super(xLoc,yLoc,1f,radius,img);
 		t=type;
 	}
-	public void setInitialVelLoc(float xLoc, float yLoc)
-	{
-		initialX=xLoc;
-		initialY=yLoc;
-	}
-	public void setFinalVelLoc(float xLoc,float yLoc)
-	{
-		finalX=xLoc;
-		finalY=yLoc;
-	}
-	public void launchSpaceShip(Spaceship ship)
-	{
-		ship.setInitialVelocity((finalX-initialX)/20, (finalY-initialY)/20);
-		
-
-	}
-	public void setVector(float x, float y)
-	{
-		
-	}
-	public float getFinalVelX()
-	{
-		return finalX;
-	}
-	public float getFinalVelY()
-	{
-		return finalY;
-	}
 	public void update()
 	{
 		super.updateMatter();

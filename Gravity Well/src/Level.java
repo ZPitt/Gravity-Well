@@ -45,7 +45,7 @@ public class Level
 		{
 			if(currentLevel[i][0]==0.0){			//ships
 				Spaceship ship = new Spaceship(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],shipImages.get((int) currentLevel[i][5]));
-				SpaceMatter.getSpaceObjects().add(ship);
+				SpaceMatter.SpaceObjects.add(ship);
 				ArrayList<BufferedImage> tempImgs = new ArrayList<BufferedImage>();
 				for(int k=0;k<4;k++)
 				{
@@ -55,16 +55,16 @@ public class Level
 			}
 			if(currentLevel[i][0]==1.0){			//planets
 				Planet planet = new Planet(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],planetImages.get((int) currentLevel[i][5]));
-				SpaceMatter.getSpaceObjects().add(planet);
+				SpaceMatter.SpaceObjects.add(planet);
 				
 			}
 			if(currentLevel[i][0]==2.0){			//endgates
 				EndGate endGate = new EndGate(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],gateImages.get((int) currentLevel[i][5]));
-				SpaceMatter.getSpaceObjects().add(endGate);
+				SpaceMatter.SpaceObjects.add(endGate);
 			}
 			if(currentLevel[i][0]==3.0){			//startgates
 				StartGate startGate = new StartGate(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],gateImages.get((int) currentLevel[i][5]));
-				SpaceMatter.getSpaceObjects().add(startGate);
+				SpaceMatter.SpaceObjects.add(startGate);
 			}
 		}
 	}

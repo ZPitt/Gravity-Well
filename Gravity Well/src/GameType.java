@@ -105,14 +105,6 @@ public class GameType {
 						   if((spaceThing instanceof Planet)){
 							   ((Planet) spaceThing).updateForces();
 						   }
-						   if(spaceThing instanceof StartGate && spaceThing.checkSelected())
-						   {
-							   spaceThing.setSelection(false);
-							   PointerInfo a = MouseInfo.getPointerInfo();
-							   Point b = a.getLocation();
-							   ((StartGate)spaceThing).setFinalVelLoc(viewPort.translateToWorldCooridinatesX((float)b.getX()-World.screenLocW-2),
-									   viewPort.translateToWorldCooridinatesY((float)b.getY()-World.screenLocH-26));
-						   }
 				   }
 		   }
 		   if(draggingScreen)
@@ -157,8 +149,10 @@ public class GameType {
 	
 	public void setClickedOnIndex(int index)
 	{
-		clickedOnIndex=index;
+		clickedOnIndex =index;
 		draggingSpaceMatter=true;
+		
+		System.out.println(index+", "+SpaceMatter.SpaceObjects.size());
 	}
 	public int getClickedOnIndex()
 	{

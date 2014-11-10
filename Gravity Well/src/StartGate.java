@@ -14,9 +14,10 @@ public class StartGate extends Gate{
 	public void update()
 	{
 		super.update();
-		setInitialVelLoc(getLocX(),getLocY());
-		
 	}
-
+	public void launchSpaceShip(Spaceship ship)
+	{
+		ship.setVelocity(this.getVelocity());
+	}
 
 }
