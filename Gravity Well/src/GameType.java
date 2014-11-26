@@ -83,13 +83,14 @@ public class GameType {
 	}
 	public void update(ViewPort viewPort)
 	{
-		if(!getGameState().equals(GameType.LOST)&&!getGameState().equals(GameType.WON)&&SpaceMatter.SpaceObjects.size()>0){
+		if((getGameState().equals(GameType.VIEWER)||getGameState().equals(GameType.PLAYING))&&SpaceMatter.SpaceObjects.size()>0){
 			SpaceMatter.SpaceObjects.get(0).updateMatter();
 		}
 		
 		if(currentState.equals(VIEWER)){
 			if(currentType==1){
-				if(draggingSpaceMatter){
+				if(draggingSpaceMatter &&clickedOnIndex<SpaceMatter.SpaceObjects.size())//second part is a quick fix to a thread issue where the index gets displaced because of the pathing function that creates and destroys objects in the same array
+				{
 					float[] diff = findMouseDifference(viewPort.getZoom());
 					clickedOnPVA = SpaceMatter.SpaceObjects.get(clickedOnIndex).getPosVelAccel();
 					SpaceMatter.SpaceObjects.get(clickedOnIndex).setPosition(clickedOnPVA[0][0]+diff[0],clickedOnPVA[1][0]+diff[1]);
@@ -128,6 +129,15 @@ public class GameType {
 			}
 
 		}
+		else if(currentState.equals(PAUSED))
+		{
+			if(draggingScreen)
+			   {
+				   float[] diff = findMouseDifference(viewPort.getZoom());
+				   viewPort.addViewPortOrigin(diff[0],diff[1]);
+				   viewPort.calculateDimensions();
+			   	}
+		}
 		
 	}
 	public void projectPath()
@@ -152,7 +162,6 @@ public class GameType {
 		clickedOnIndex =index;
 		draggingSpaceMatter=true;
 		
-		System.out.println(index+", "+SpaceMatter.SpaceObjects.size());
 	}
 	public int getClickedOnIndex()
 	{

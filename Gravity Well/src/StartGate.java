@@ -10,6 +10,7 @@ public class StartGate extends Gate{
 		finalY= yLoc;
 		initialX=xLoc;
 		initialY=yLoc;
+		setType(1);
 	}
 	public void update()
 	{

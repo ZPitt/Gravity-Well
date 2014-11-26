@@ -35,6 +35,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	private final int BUTTON_HEIGHT = 50;
 	private final int X_MOUSE_OFFSET = 2;
 	private final int Y_MOUSE_OFFSET = 26;
+	public int stepCount=500;
 	
 	public GameType currentGameType = new GameType();
 	
@@ -42,9 +43,9 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	public static final int screenLocH = (int)java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2-HEIGHT/2;//centers the width
 	private int fps = 60;
 	private int frameCount = 0;
-	public int x,y,z,rad,mass;
+	public int x,y,z,rad,mass,currentLevel;
 	
-	private boolean up,down,right,left,somethingSelected,running,paused,isPathing;
+	private boolean up,down,right,left,somethingSelected,running,paused,isPathing,simulationStarted;
 	
 	public float worldX,worldY,zoomFactor,xf,yf;
 	
@@ -69,9 +70,9 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
     JButton deleteButton = new JButton();
     JButton launchButton = new JButton();
     JButton retryButton = new JButton();
-//	private JButton startButton1=new JButton();
-//	private JButton startButton2,menuButton,optionsButton,simulatorButton,backButton1,backButton2,backButton3,planetButton,
-//			moonButton, startGateButton,endGateButton,runSimButton;
+    JButton stopButton = new JButton();
+    JButton resetButton = new JButton();
+    JButton tempLevelButton = new JButton();
     
     JPanel cards;
     private GamePanel currentCard = new GamePanel();
@@ -97,21 +98,24 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
     public String currentName = "MENU";
     public String previousName = "MENU";
     
-    public int[] pathX={};
-    public int[] pathY={};
+    public int[] pathX= new int[stepCount];
+    public int[] pathY= new int[stepCount];
+    public float[] tempX= new float[stepCount];
+    public float[] tempY= new float[stepCount];
     
     public ViewPort viewPort = new ViewPort(0,0,WIDTH,HEIGHT);
     
-    public BufferedImage gravityWellImg,spaceShipImg,tempSpaceShipImg,currentSpaceShipImg,spaceShipMovingImg,spaceBackground1,planet1,currentPlanet1Img,tempPlanet1Img,matterImage;
+    public BufferedImage gravityWellImg,spaceShipImg,tempSpaceShipImg,currentSpaceShipImg,spaceShipMovingImg,spaceBackground1,planet1,currentPlanet1Img,
+    					 tempPlanet1Img,matterImage,selectedCircle,tempSelectedCircle;
     ImageIcon startButtonI,startButtonIRO,menuButtonI,menuButtonIRO,simulatorButtonI,simulatorButtonIRO,optionsButtonI,optionsButtonIRO;
     public final String imgDir = "Images/";
-    public String[] imgNames = {"AddEndGate","AddMoon","AddPlanet","AddStartGate","Back","Back","Back","Delete","Launch","Menu","Options","Retry","Simulator","Start","Start","Run","Stop","Pause","Help","AddOribit","Delete"};
+    public String[] imgNames = {"AddEndGate","AddMoon","AddPlanet","AddStartGate","Back","Back","Back","Delete","Launch","Menu","Options","Reset","Retry","Run","Simulator","Start","Start","Stop","Temp"};//"Pause","Help","AddOribit","Delete"};
     							  
     Level levels = new Level();
     
     ArrayList<SpaceMatter> spaceStuff;
     
-    
+    Velocity shipVelocity =new Velocity(0,0);
 	
 	public static void main(String args[])
 	{
@@ -133,6 +137,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		addMouseWheelListener(this);
 		
         addComponentToPane(this.getContentPane());
+        
+        currentLevel=1;
         
         running = !running;
 	      if (running)
@@ -159,6 +165,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	        levelSelectCard.setBackground(Color.GREEN);
 	        levelSelectCard.add(backButton2);
 	        levelSelectCard.add(startButton2);
+	        levelSelectCard.add(tempLevelButton);
 	        
 	        simulatorCard.setBackground(Color.WHITE);
 	        simulatorCard.add(backButton3);
@@ -168,6 +175,9 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	        simulatorCard.add(addStartGateButton);
 	        simulatorCard.add(runSimButton);
 	        simulatorCard.add(deleteButton);
+	        simulatorCard.add(resetButton);
+	        simulatorCard.add(stopButton);
+	        
 	   
 	       
 	        gameCard.add(menuButton);
@@ -196,17 +206,19 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		 try{
 			 gravityWellImg = ImageIO.read(new File(imgDir+"GravityLogo_5.png"));
 			 spaceBackground1 =ImageIO.read(new File(imgDir+"potentialBackground_1.png"));
+			 selectedCircle = ImageIO.read(new File(imgDir+"SelectionCircle.png"));
 		 }
 		 catch(IOException e){
 			 e.printStackTrace();
 		 }
 	 }
-	 public void levelStartUp()
+	 public void levelStartUp(int whichLevel)
 		{
 			currentGameType.setGameType(0);
 			currentGameType.setActive(true);
-			levels.makeLevel(1);
-			viewPort.setFocals(400,400);
+			levels.makeLevel(whichLevel);
+			getStartGate().setVelocity(new Velocity(0,0));
+			viewPort.setFocals(getStartGate().getLocX(),getStartGate().getLocY());
 			rescaleImages();
 		}
 		public void simulatorStartUp()
@@ -236,11 +248,15 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	     buttonArray.add(launchButton);
 	     buttonArray.add(menuButton);
 	     buttonArray.add(optionsButton);
+	     buttonArray.add(resetButton);
 	     buttonArray.add(retryButton);
+	     buttonArray.add(runSimButton);
 	     buttonArray.add(simulatorButton);
 		 buttonArray.add(startButton1);
 	     buttonArray.add(startButton2);
-	     buttonArray.add(runSimButton);
+	     buttonArray.add(stopButton);
+	     buttonArray.add(tempLevelButton);
+	     
 	     
 	        //buttonArray.add(startGateButton);
 	        //buttonArray.add(endGateButton);
@@ -267,12 +283,20 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	        addMoonButton.setBounds(SIMULATOR_BUTTON_X-30,SIMULATOR_BUTTON_Y+(BUTTON_Y_GAP+BUTTON_HEIGHT)*2,160,BUTTON_HEIGHT);
 	        addStartGateButton.setBounds(SIMULATOR_BUTTON_X,SIMULATOR_BUTTON_Y+(BUTTON_Y_GAP+BUTTON_HEIGHT)*3,125,BUTTON_HEIGHT);
 	        addEndGateButton.setBounds(SIMULATOR_BUTTON_X,SIMULATOR_BUTTON_Y+(BUTTON_Y_GAP+BUTTON_HEIGHT)*4,125,BUTTON_HEIGHT);
-	        runSimButton.setBounds(SIMULATOR_BUTTON_X-25,SIMULATOR_BUTTON_Y+(BUTTON_Y_GAP+BUTTON_HEIGHT)*5,125,BUTTON_HEIGHT);
+	        runSimButton.setBounds(SIMULATOR_BUTTON_X-25+125,725,125,BUTTON_HEIGHT);
 	        deleteButton.setBounds(SIMULATOR_BUTTON_X-10,SIMULATOR_BUTTON_Y+(BUTTON_Y_GAP+BUTTON_HEIGHT)*6,125,BUTTON_HEIGHT);
 	        launchButton.setBounds(345,725,125,50);
 	        menuButton.setBounds(345, 10,125,50);
 	        retryButton.setBounds(345,345,125,50);
+	        stopButton.setBounds(SIMULATOR_BUTTON_X-25+125,725,125,BUTTON_HEIGHT);
+	        resetButton.setBounds(SIMULATOR_BUTTON_X+225,725,125,BUTTON_HEIGHT);
+	        
+	        
 	        retryButton.setVisible(false);
+	        resetButton.setVisible(false);
+	        stopButton.setVisible(false);
+	        
+	        
 	       for(int i=0;i<textFields.size();i++)
 	       {
 	    	   textFields.get(i).addKeyListener(this);
@@ -315,7 +339,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	    	  previousCard = currentCard;
 	    	  currentCard=gameCard; }
 	     if(s==startButton2){
-	    	 levelStartUp();
+	    	 currentLevel = 1;
+	    	 levelStartUp(currentLevel);
 	    	 previousName = currentName;
 	    	 currentName = GAME;
 	    	  previousCard = currentCard;
@@ -327,6 +352,10 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	      //if(s==startButton2 || s==menuButton || s==simulatorButton || s==backButton3)
 	      {
 	    	  
+	      }
+	      if(s==backButton3){
+	    	  currentGameType.setGameState(GameType.VIEWER);
+	    	  updateSimArray();
 	      }
 	      if(s==addPlanetButton)
 	    	  addPlanet();
@@ -344,7 +373,24 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	      }
 	      if(s==runSimButton)
 	      {
-	    	 launchSequence();
+	    	 runSimulation();
+	      }
+	      if(s==stopButton)
+	      {
+	    	  stopPause();
+	      }
+	      if(s==resetButton)
+	      {
+	    	  resetLevel();
+	      }
+	      if(s==tempLevelButton)
+	      {
+	    	  levelStartUp(0);
+	    	  currentLevel=0;
+	    	  previousName = currentName;
+		      currentName = GAME;
+		      previousCard = currentCard;
+		      currentCard=gameCard;
 	      }
 	      CardLayout cl = (CardLayout)(cards.getLayout());
 	      cl.show(cards,currentName);
@@ -367,7 +413,29 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 			viewPort.calculateDimensions();
 			}
 			rescaleImages();
+			rescaleIcons();
 		}
+	}
+	public void resetLevel()
+	{
+		simulationStarted=false;
+		levels.makeLevel(0);
+		stopButton.setVisible(false);
+		resetButton.setVisible(false);
+		currentGameType.setGameState(GameType.VIEWER);
+		runSimButton.setVisible(true);
+		viewPort.setFocals(0,0);
+		rescaleImages();
+		
+	}
+	public void stopPause()
+	{
+		for(int i=0;i<SpaceMatter.SpaceObjects.size();i++){
+			SpaceMatter.SpaceObjects.get(i).setStill();
+		}
+		stopButton.setVisible(false);
+		runSimButton.setVisible(true);
+		currentGameType.setGameState(GameType.PAUSED);
 	}
 	public void rescaleImages()
 	{
@@ -376,20 +444,29 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 			SpaceMatter.SpaceObjects.get(i).resizeImage(viewPort.getZoom());
 		}
 	}
+	public void rescaleIcons()
+	{
+		if(currentGameType.getGameType()==1)
+			tempSelectedCircle = Scalr.resize(selectedCircle,(int)(getSelected().getRadius()*2/viewPort.getZoom())+8);
+	}
+
 	public void setGameModeInactive()
 	{
 		currentGameType.setActive(false);
+		currentGameType.setGameState(GameType.VIEWER);
 	}
 	public void launchSequence()
 	{
 		currentGameType.setGameState(GameType.PLAYING);
-		launchButton.setVisible(false);
-		
+
 		createPlayerShip();
 		getStartGate().launchSpaceShip(getPlayerShip());
-		
+		shipVelocity = getStartGate().getVelocity();
 		getPlayerShip().setActive(true);
-		retryButton.setVisible(true);
+		if(currentGameType.getGameType()==0){
+			retryButton.setVisible(true);
+			launchButton.setVisible(false);
+		}
 		retryButton.setBounds(345,700,125,50);
 		rescaleImages();
 	}
@@ -498,6 +575,12 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 			SpaceMatter.getSpaceObjects().get(0).setPosition(10f,10f);
 			SpaceMatter.getSpaceObjects().get(0).setVelocity(new Velocity(0,0));
 		}
+		if(e.getKeyCode()==KeyEvent.VK_V)
+		{
+			for(int i=0;i<stepCount;i++){
+				System.out.print(pathX[i]+", ");
+			}
+		}
 	}
 	@Override
 	public void keyReleased(KeyEvent e) {
@@ -544,8 +627,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 						if(SpaceMatter.getSpaceObjects().get(i) instanceof StartGate){ //checks to see if its clicked on and startGate
 							StartGate sGate =((StartGate)SpaceMatter.getSpaceObjects().get(i));
 							sGate.getVelocity().setVelocity(worldPointX-sGate.getLocX(), worldPointY-sGate.getLocY());
-							SpaceMatter.getSpaceObjects().get(i).setSelection(true);
-							System.out.println(worldPointX+", "+worldPointY);
+							
 						}
 					}
 			 }
@@ -583,16 +665,15 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		
 		
 			if(e.getButton()==MouseEvent.BUTTON1){
-				for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++)
+				for(int i=SpaceMatter.getSpaceObjects().size()-1;i>=0;i--)
 				{
-					if(SpaceMatter.getSpaceObjects().get(i).isClickedOn(new Point(worldPointX,worldPointY))){
-						for(int k=0;k<SpaceMatter.getSpaceObjects().size();k++) 
-						{
-							SpaceMatter.getSpaceObjects().get(k).setSelection(false);
-						}
+					if(SpaceMatter.getSpaceObjects().get(i).isClickedOn(new Point(worldPointX,worldPointY))&&currentGameType.getGameType()!=0){
 						SpaceMatter.getSpaceObjects().get(i).setSelection(true);
-						if(isPathing) // sometimes when you click it will happen in the middle of the pathing calculations and the index will be thrown off, this compensates for that
+						rescaleIcons();
+						if(isPathing){ // sometimes when you click it will happen in the middle of the pathing calculations and the index will be thrown off, this compensates for that
+							System.out.println("INTERRUPTED PATHING");
 							i=i-1;
+						}
 						currentGameType.setClickedOnIndex(i);
 						setVisibleStats(true);
 						currentGameType.setDraggingMatter(true);
@@ -609,6 +690,28 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 
 	}
 	public void keyTyped(KeyEvent arg0) {
+	}
+	public void runSimulation()
+	{
+		if(currentGameType.getGameState().equals(GameType.PAUSED))
+		{
+			runSimButton.setVisible(false);
+			stopButton.setVisible(true);
+			currentGameType.setGameState(GameType.PLAYING);
+		}
+		else if(getStartGate()!=null){
+			updateSimArray();//this is what the reset function will refer to and also implement the transformation of SpaceObjects data into float arrays.
+			runSimButton.setVisible(false);
+			stopButton.setVisible(true);
+			resetButton.setVisible(true);
+			launchSequence();
+			
+			for(int i=0;i<stepCount;i++){
+				tempX[i]=viewPort.translateToWorldCooridinatesX((float)pathX[i]);
+				tempY[i]=viewPort.translateToWorldCooridinatesY((float)pathY[i]);
+			}
+			simulationStarted=true;
+		}
 	}
 	public Spaceship getPlayerShip()
 	{
@@ -706,8 +809,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	public void restartLevel()
 	{
 		
-		levelStartUp();
-		lost();
+		levelStartUp(currentLevel);
+		getStartGate().setJustVelocity(shipVelocity);
 		viewPort.setZoom(1);
 		viewPort.calculateDimensions();
 		rescaleImages();
@@ -719,16 +822,16 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	}
 	 public void lost()
 	 {
-		 System.out.println("STOP EVERYTHING I HAVE AN ANNOUNCEMENT");
-		 
 		 for(int i=0;i<SpaceMatter.SpaceObjects.size();i++){
-			 SpaceMatter.SpaceObjects.get(i).setStill();
-			 if(SpaceMatter.SpaceObjects.get(i) instanceof Spaceship){
-				 SpaceMatter.SpaceObjects.get(i).setActive(false);
-				 SpaceMatter.SpaceObjects.get(i).setAccel(0,0);
-				 SpaceMatter.SpaceObjects.get(i).setVelocity(new Velocity(0,0));
-				 System.out.println(SpaceMatter.SpaceObjects.get(i).getPosVelAccel()[0][2]);
+			 SpaceMatter matter = SpaceMatter.SpaceObjects.get(i); 
+			 matter.setStill();
+			 if(matter instanceof Spaceship){
+				 matter.setActive(false);
+				 matter.setAccel(0,0);
+				 matter.setVelocity(new Velocity(0,0));
 			 }
+			 if(matter instanceof StartGate)
+				 shipVelocity = matter.getVelocity();
 		 }
 		 retryButton.setBounds(345,345,125,50);
 		 
@@ -768,8 +871,6 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	 {
 		 
 			 Level.makePlayerShip(getStartGate().getLocX(),getStartGate().getLocY());
-			 if(!isPathing)
-				 System.out.println("found you for real this time");
 	 }
 
 	 public void projectedPath()
@@ -780,14 +881,12 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		 createPlayerShip();
 		 getStartGate().launchSpaceShip(getPlayerShip());
 
-		 while(count<1000) //how many steps it takes, and might add additional constraint of collision detection too if not too expensive
+		 while(count<stepCount) //how many steps it takes, and might add additional constraint of collision detection too if not too expensive
 		 {
 			 currentGameType.projectPath();
 			 count++;
 		 }
-		pathX = new int[count];
 		pathX = getPlayerShip().getPathX(viewPort);
-		pathY = new int[count];
 		pathY = getPlayerShip().getPathY(viewPort);
 		SpaceMatter.SpaceObjects.remove(0);
 		
@@ -805,11 +904,34 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 					  updateShip();
 					 
 			  }
-			  if(currentGameType.getGameState().equals(GameType.VIEWER)&&currentGameType.getGameType() == 1&&getStartGate()!=null){
-				   projectedPath();
-				  }
+			  if(currentGameType.getGameType() == 1 ){
+				 if(currentGameType.getGameState().equals(GameType.VIEWER)&& getStartGate()!=null)
+					 projectedPath();
+				}
+			  
 		   }
 		  updateGraphicalComponents(); //this is where we do everything concerning jcomponents and such
+	   }
+	   public void updateSimArray()//here we go *finger crossed*
+	   {
+		   if(getPlayerShip()!=null)
+			   SpaceMatter.SpaceObjects.remove(0);
+		   float[][] tempArray = new float[SpaceMatter.SpaceObjects.size()][5];
+		   for(int i=0;i<SpaceMatter.SpaceObjects.size();i++)
+		   {
+			   SpaceMatter matter = SpaceMatter.SpaceObjects.get(i);
+			   tempArray[i]= matter.getArray();
+		   }
+		   levels.makeSimLevel(tempArray);
+	   }
+	   public void updateProjectedPath()
+	   {
+		   for(int i=0;i<stepCount;i++)
+		   {
+			   pathX[i]=viewPort.translateToViewPortX(tempX[i]);
+			   pathY[i]=viewPort.translateToViewPortY(tempY[i]);
+			   
+		   }
 	   }
 	   public void updateGraphicalComponents()
 	   {
@@ -820,10 +942,12 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 				   
 			   }
 			   else if(currentGameType.getGameState().equals(GameType.PLAYING)){
-				   
+				   if(simulationStarted)
+					   updateProjectedPath(); 
 			   }
 			   else if(currentGameType.getGameState().equals(GameType.PAUSED)){
-				   
+				   if(simulationStarted)
+					   updateProjectedPath(); 
 			   }
 			   
 			   else if(currentGameType.getGameState().equals(GameType.LOST)){
@@ -863,41 +987,31 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	{
 		Planet newPlanet = new Planet((float)viewPort.getFocals().getX(),(float)viewPort.getFocals().getY(),30000f,40f,Level.getNewImage(0,0));
 		newPlanet.setSelection(true);
-		for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++)
-		{
-			SpaceMatter.getSpaceObjects().get(i).setSelection(false);
-		}
 		SpaceMatter.getSpaceObjects().add(newPlanet);
 		rescaleImages();
 		setVisibleStats(true);
+		rescaleIcons();
 	}
 	public void addEndGate()
 	{
 		EndGate newGate = new EndGate((float)viewPort.getFocals().getX(),(float)viewPort.getFocals().getY(),30000f,20f,Level.gateImages.get(0));
 		newGate.setSelection(true);
-		for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++)
-		{
-			SpaceMatter.getSpaceObjects().get(i).setSelection(false);
-		}
 		SpaceMatter.getSpaceObjects().add(newGate);
 		rescaleImages();
 		setVisibleStats(true);
+		rescaleIcons();
 	}
 	public void addStartGate()
 	{
 		if(getStartGate()==null){
 			StartGate newGate = new StartGate((float)viewPort.getFocals().getX(),(float)viewPort.getFocals().getY(),30000f,20f,Level.gateImages.get(1));
-			
 			newGate.setSelection(true);
-			for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++)
-			{
-				SpaceMatter.getSpaceObjects().get(i).setSelection(false);
-			}
 			SpaceMatter.getSpaceObjects().add(newGate);
-			
+			rescaleImages();
 			setVisibleStats(true);
 		}
 		rescaleImages();
+		rescaleIcons();
 	}
 	private class GamePanel extends JPanel 
 	   {
@@ -951,7 +1065,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	    		 	rad =(int)((matter.getRadius())/viewPort.getZoom());
 	    		 	
 //	    		 
-	    		 	if(matter instanceof Spaceship&&currentName.equals(GAME)&&currentGameType.getGameState().equals(GameType.PLAYING))//sets focals onto the ship (400,400)
+	    		 	if(matter instanceof Spaceship&&currentGameType.getGameState().equals(GameType.PLAYING))//sets focals onto the ship (400,400)
 	    		 		viewPort.setFocals(worldX,worldY);
 	    		 	
 	    		 	if(viewPort.existInViewPort(worldX, worldY,rad))
@@ -961,11 +1075,11 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		 				
 		 				matterImage = matter.getImage();
 		 				
+		 				if(matter.checkSelected() && currentGameType.getGameState().equals(GameType.VIEWER)){
+    		 				g.drawImage(tempSelectedCircle,x-rad-4,y-rad-4,null);
+    		 			}
+		 				
 	    		 		if(matter instanceof Planet){
-	    		 			if(matter.checkSelected() && currentGameType.getGameState().equals(GameType.VIEWER)){
-	    		 				g.setColor(Color.GRAY);
-	    		 				g.fillOval(x-rad-4,y-rad-4,rad*2+8,rad*2+8);
-	    		 			}
 	    		 			g.drawImage(matterImage,x-rad,y-rad,null);
 	    		 			
 	    		 		}

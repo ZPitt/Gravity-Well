@@ -14,12 +14,16 @@ public class Velocity {
 		x=xComponent;
 		y=yComponent;
 		m=(float) Math.sqrt(x*x+y*y);
-		a=Math.asin(y);
+		a=Math.tan(x/y);
 	
 	}
 	public float getMag()
 	{
 		return m;
+	}
+	public float getAngle()
+	{
+		return (float)a;
 	}
 	public void changeMag(float newMag)
 	{
@@ -46,7 +50,7 @@ public class Velocity {
 		x=xComponent;
 		y=yComponent;
 		m=(float) Math.sqrt(x*x+y*y);
-		a=Math.asin(y);
+		a=Math.atan2((double)y,(double)x);
 	}
 	
 

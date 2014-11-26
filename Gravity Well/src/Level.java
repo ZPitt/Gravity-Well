@@ -64,6 +64,7 @@ public class Level
 			}
 			if(currentLevel[i][0]==3.0){			//startgates
 				StartGate startGate = new StartGate(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],gateImages.get((int) currentLevel[i][5]));
+				startGate.setJustVelocity(new Velocity((double)currentLevel[i][6],currentLevel[i][7]));
 				SpaceMatter.SpaceObjects.add(startGate);
 			}
 		}
@@ -123,9 +124,10 @@ public class Level
 	{
 		return currentLevelNum;
 	}
-	public void makeTempLevel()
+	public void makeSimLevel(float[][] newLevel)
 	{
-		
+		levels.remove(0);
+		levels.add(0, newLevel);
 	}
 	public void loadLevels()
 	{
@@ -134,7 +136,7 @@ public class Level
 						  	{1,200,300,900000,20,0},
 							{1,400,500,90000,20,0},
 							{2,100,100,1,20,0},
-							{3,500,500,1,20,1}};
+							{3,500,500,1,20,1,0,0}};
 		levels.add(level1);
 		
 	}

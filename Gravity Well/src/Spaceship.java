@@ -48,6 +48,7 @@ public class Spaceship extends SpaceMatter
 		}
 		return tempPath;
 	}
+	
 	public void setShipImages(ArrayList<BufferedImage>	shipImgs)
 	{
 		shipImages=shipImgs;

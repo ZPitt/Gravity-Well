@@ -10,9 +10,9 @@ import org.imgscalr.Scalr;
 public class SpaceMatter 
 {
 	public float speed = .1f;
-	public float turnSpeed = 1f;
+	public float turnSpeed = 3f;
 	public final int scaleSize = 20;
-	private float m,r;
+	private float m,r,t;
 	protected float xLast;
 	protected float yLast;
 	private float distance,force;
@@ -45,6 +45,7 @@ public class SpaceMatter
 		isActive=true;
 		matterImage=img;
 		velocity = new Velocity(0,0);
+		t=0;
 	}
 	public float getLocX()
 	{
@@ -103,12 +104,17 @@ public class SpaceMatter
 	public Velocity getVelocity()
 	{
 		return velocity;
+		
 	}
 	public void setVelocity(Velocity v)
 	{
 		velocity = v;
 		pva[0][1]=velocity.getX()/20;
 		pva[1][1]=velocity.getY()/20;
+	}
+	public void setJustVelocity(Velocity v)
+	{
+		velocity = v;
 	}
 	public void addVelocity(Float xVelocity, Float yVelocity)
 	{
@@ -185,10 +191,21 @@ public class SpaceMatter
 			clickedOn = true;
 		return clickedOn;
 	}
+	public void selectFalse()
+	{
+		isSelected=false;
+	}
 	public void setSelection(boolean sel)
 	{
+		for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++)
+		{
+			SpaceMatter.getSpaceObjects().get(i).selectFalse();
+		}
 		isSelected=sel;
-		
+	}
+	public void setType(int type)
+	{
+		t=(float)type;
 	}
 	public boolean checkSelected()
 	{
@@ -242,5 +259,18 @@ public class SpaceMatter
 		currentImage = img;
 		matterImage=img;
 	}
-
+	public float[] getArray()
+	{
+		int obj = 0;
+		if(this instanceof Planet)
+			obj=1;
+		else if(this instanceof EndGate)
+			obj=2;
+		else if(this instanceof StartGate)
+			obj=3;
+		
+	
+		float[] a = {(float)obj,pva[0][0],pva[1][0],m,r,t,velocity.getAngle(),velocity.getMag()};
+		return a;
+	}
 }
