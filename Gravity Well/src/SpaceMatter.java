@@ -31,6 +31,7 @@ public class SpaceMatter
 	
 	AffineTransform transform = new AffineTransform();
 	static ArrayList<SpaceMatter> SpaceObjects = new ArrayList<SpaceMatter>();
+	static ArrayList<Asteroid> Asteroids = new ArrayList<Asteroid>();
 
 	
 	
@@ -268,7 +269,10 @@ public class SpaceMatter
 			obj=2;
 		else if(this instanceof StartGate)
 			obj=3;
-		
+		else if(this instanceof Objective)
+			obj=4;
+		else if(this instanceof Asteroid)
+			obj=5;
 	
 		float[] a = {(float)obj,pva[0][0],pva[1][0],m,r,t,velocity.getAngle(),velocity.getMag()};
 		return a;

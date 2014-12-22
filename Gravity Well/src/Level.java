@@ -14,17 +14,21 @@ public class Level
 	public static ArrayList<BufferedImage> shipImages = new ArrayList<BufferedImage>();
 	public static ArrayList<BufferedImage> moonImages = new ArrayList<BufferedImage>();
 	public static ArrayList<BufferedImage> gateImages = new ArrayList<BufferedImage>();
+	public static ArrayList<BufferedImage> objectiveImages = new ArrayList<BufferedImage>();
+	public static ArrayList<BufferedImage> asteroidImages = new ArrayList<BufferedImage>();
 	
 	public ArrayList<BufferedImage> backGroundImages = new ArrayList<BufferedImage>();
 	
 	public float[][] tempLevel= {{1f,0f,0f,30000f,40f,0},{10}};
-	public int currentLevelNum;
+	public int currentLevelNum,objectiveCount;
 	BufferedImage img;
 	public final String imgDir = "Images/";
 	public BufferedImage gravityWellImg,spaceShipImg,tempSpaceShipImg,currentSpaceShipImg,spaceShipMovingImg,spaceBackground1,planet1,currentPlanet1Img,tempPlanet1Img;
 	public String[] planetNames = {"Planet1"};
 	public String[] shipNames = {"SpaceShip","SpaceShip2"};
 	public String[] moonNames = {};
+	public String[] objectiveNames = {"Objective1"};
+	public String[] asteroidNames = {"Asteroid1"};
 	public String[] gateNames = {"EndGate1","StartGate1"};
 	public String[] backGroundNames = {"potentialBackGround_1"};
 	public BufferedImage currentBackground;
@@ -39,7 +43,9 @@ public class Level
 	{
 		currentLevelNum = levelNum;
 		SpaceMatter.getSpaceObjects().clear();
+		SpaceMatter.Asteroids.clear();
 		currentLevel= levels.get(levelNum);
+		objectiveCount =0;
 		
 		for(int i=0;i<currentLevel.length;i++)
 		{
@@ -66,6 +72,17 @@ public class Level
 				StartGate startGate = new StartGate(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],gateImages.get((int) currentLevel[i][5]));
 				startGate.setJustVelocity(new Velocity((double)currentLevel[i][6],currentLevel[i][7]));
 				SpaceMatter.SpaceObjects.add(startGate);
+			}
+			if(currentLevel[i][0]==4.0){			//objectives
+				Objective objective = new Objective(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],objectiveImages.get((int) currentLevel[i][5]));
+				SpaceMatter.SpaceObjects.add(objective);
+				objectiveCount++;
+			}
+			if(currentLevel[i][0]==5.0){			//asteroids
+				Asteroid asteroid = new Asteroid(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],asteroidImages.get((int) currentLevel[i][5]));
+				asteroid.setInitialDelay(currentLevel[i][6]);
+				asteroid.setTFDS(currentLevel[i][7], currentLevel[i][8], currentLevel[i][9], currentLevel[i][10]);
+				SpaceMatter.Asteroids.add(asteroid);
 			}
 		}
 	}
@@ -115,6 +132,16 @@ public class Level
 				 BufferedImage gateImage = ImageIO.read(new File(imgDir+gateNames[i]+".png"));
 				 gateImages.add(gateImage);
 			 }
+			 for(int i=0;i<objectiveNames.length;i++)
+			 {
+				 BufferedImage objectiveImage = ImageIO.read(new File(imgDir+objectiveNames[i]+".png"));
+				 objectiveImages.add(objectiveImage);
+			 }
+			 for(int i=0;i<objectiveNames.length;i++)
+			 {
+				 BufferedImage asteroidImage = ImageIO.read(new File(imgDir+asteroidNames[i]+".png"));
+				 asteroidImages.add(asteroidImage);
+			 }
 		 }
 		 catch(IOException e){
 			 e.printStackTrace();
@@ -132,11 +159,12 @@ public class Level
 	public void loadLevels()
 	{
 		levels.add(tempLevel);
-		float[][] level1 = {//{0,500,500,1,10,0},
+		float[][] level1 = {{4,200,400,1,20,0},
 						  	{1,200,300,900000,20,0},
 							{1,400,500,90000,20,0},
 							{2,100,100,1,20,0},
-							{3,500,500,1,20,1,0,0}};
+							{3,500,500,1,20,1,0,0},
+							{5,250,550,1,15,0,0,120,800,100,130f}};
 		levels.add(level1);
 		
 	}
@@ -146,5 +174,9 @@ public class Level
 	}
 	public BufferedImage getBackground(){
 		return currentBackground;
+	}
+	public int getObjectiveCount()
+	{
+		return objectiveCount;
 	}
 }

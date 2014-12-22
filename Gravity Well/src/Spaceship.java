@@ -15,9 +15,12 @@ public class Spaceship extends SpaceMatter
 	ArrayList<Float> yPath = new ArrayList<Float>();
 	
 	private int[] tempPath;
+	public int objectiveCount;
 	
 	public Spaceship(Float xLoc, Float yLoc,Float mass, Float radius,BufferedImage img) {
 		super(xLoc, yLoc,mass,radius,img);
+		
+		objectiveCount=0;
 		
 	}
 	
@@ -64,5 +67,13 @@ public class Spaceship extends SpaceMatter
 		if(movement.equals(MOVING))
 			setMatterImage(shipImages.get(3));
 		
+	}
+	public void recievedObjective()
+	{
+		objectiveCount++;
+	}
+	public int getObjectiveCount()
+	{
+		return objectiveCount;
 	}
 }

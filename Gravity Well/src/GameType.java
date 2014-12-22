@@ -83,11 +83,11 @@ public class GameType {
 	}
 	public void update(ViewPort viewPort)
 	{
-		if((getGameState().equals(GameType.VIEWER)||getGameState().equals(GameType.PLAYING))&&SpaceMatter.SpaceObjects.size()>0){
+		if((getGameState().equals(GameType.VIEWER) || getGameState().equals(GameType.PLAYING)) && SpaceMatter.SpaceObjects.size()>0){
 			SpaceMatter.SpaceObjects.get(0).updateMatter();
 		}
 		
-		if(currentState.equals(VIEWER)){
+		if(currentState.equals(VIEWER)){ //organizes all the updating in mode "VIEWER"
 			if(currentType==1){
 				if(draggingSpaceMatter &&clickedOnIndex<SpaceMatter.SpaceObjects.size())//second part is a quick fix to a thread issue where the index gets displaced because of the pathing function that creates and destroys objects in the same array
 				{
@@ -106,7 +106,9 @@ public class GameType {
 						   if((spaceThing instanceof Planet)){
 							   ((Planet) spaceThing).updateForces();
 						   }
+						   
 				   }
+				
 		   }
 		   if(draggingScreen)
 		   {
@@ -115,8 +117,9 @@ public class GameType {
 			   viewPort.calculateDimensions();
 		   	}
 			
+		
 		}
-		else if(currentState.equals(PLAYING)){
+		else if(currentState.equals(PLAYING)){ //all the updating for the mode "PLAYING". Organized and different than "VIEWER" as shown above. 
 			for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++){
 				 SpaceMatter spaceThing = SpaceMatter.SpaceObjects.get(i);
 				 
@@ -126,6 +129,10 @@ public class GameType {
 				 if(spaceThing instanceof Spaceship){
 					   ((Spaceship) spaceThing).updateForces(); 
 				 }
+			}
+			for(int i=0;i<SpaceMatter.Asteroids.size();i++)
+			{
+				SpaceMatter.Asteroids.get(i).update();
 			}
 
 		}
