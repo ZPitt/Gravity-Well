@@ -104,7 +104,7 @@ public class GameType {
 				   {
 					   SpaceMatter spaceThing = SpaceMatter.SpaceObjects.get(i);
 						   if((spaceThing instanceof Planet)){
-							   ((Planet) spaceThing).updateForces();
+							   ((Planet) spaceThing).update();
 						   }
 						   
 				   }
@@ -122,13 +122,7 @@ public class GameType {
 		else if(currentState.equals(PLAYING)){ //all the updating for the mode "PLAYING". Organized and different than "VIEWER" as shown above. 
 			for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++){
 				 SpaceMatter spaceThing = SpaceMatter.SpaceObjects.get(i);
-				 
-				 if((spaceThing instanceof Planet)){
-					   ((Planet) spaceThing).updateForces();
-				 }
-				 if(spaceThing instanceof Spaceship){
-					   ((Spaceship) spaceThing).updateForces(); 
-				 }
+					 spaceThing.update(); //this is so beautiful it make me want to cry
 			}
 			for(int i=0;i<SpaceMatter.Asteroids.size();i++)
 			{
@@ -151,12 +145,8 @@ public class GameType {
 	{
 		for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++){
 			SpaceMatter spaceThing = SpaceMatter.SpaceObjects.get(i);
-		 if((spaceThing instanceof Planet)){
-			   ((Planet) spaceThing).updateForces();
-		   }
-		   if(spaceThing instanceof Spaceship){
-			   ((Spaceship) spaceThing).updateForces(); 
-		   }
+			if(spaceThing instanceof Spaceship)
+				spaceThing.update();
 		}
 		SpaceMatter.SpaceObjects.get(0).updateMatter();
 	}

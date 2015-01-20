@@ -27,7 +27,7 @@ public class Planet extends SpaceMatter
 		addMoon(moon);
 		return moon;
 	}
-	public void updateForces()
+	public void update()
 	{
 		//however I decide to update planets
 	}

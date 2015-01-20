@@ -446,6 +446,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		stopButton.setVisible(false);
 		runSimButton.setVisible(true);
 		currentGameType.setGameState(GameType.PAUSED);
+		activateSpace(false);
 	}
 	public void rescaleImages()
 	{
@@ -473,12 +474,19 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		getStartGate().launchSpaceShip(getPlayerShip());
 		shipVelocity = getStartGate().getVelocity();
 		getPlayerShip().setActive(true);
+		activateSpace(true);
 		if(currentGameType.getGameType()==0){
 			retryButton.setVisible(true);
 			launchButton.setVisible(false);
 		}
 		retryButton.setBounds(345,700,125,50);
 		rescaleImages();
+	}
+	public void activateSpace(boolean status){
+		for(int i=1;i<SpaceMatter.SpaceObjects.size();i++)
+		{
+			SpaceMatter.SpaceObjects.get(i).setActive(status);
+		}
 	}
 	public void deleteSelected()
 	{

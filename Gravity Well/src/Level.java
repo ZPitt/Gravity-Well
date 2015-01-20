@@ -34,6 +34,8 @@ public class Level
 	public BufferedImage currentBackground;
 	public static float[][] currentLevel;
 	
+	ArrayList<BufferedImage> tempImgs = new ArrayList<BufferedImage>();
+
 	public Level()
 	{
 		loadLevels();
@@ -52,7 +54,7 @@ public class Level
 			if(currentLevel[i][0]==0.0){			//ships
 				Spaceship ship = new Spaceship(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],shipImages.get((int) currentLevel[i][5]));
 				SpaceMatter.SpaceObjects.add(ship);
-				ArrayList<BufferedImage> tempImgs = new ArrayList<BufferedImage>();
+				
 				for(int k=0;k<4;k++)
 				{
 					tempImgs.add(shipImages.get((int) currentLevel[i][5]+k));
@@ -76,6 +78,11 @@ public class Level
 			if(currentLevel[i][0]==4.0){			//objectives
 				Objective objective = new Objective(currentLevel[i][1],currentLevel[i][2],currentLevel[i][3],currentLevel[i][4],objectiveImages.get((int) currentLevel[i][5]));
 				SpaceMatter.SpaceObjects.add(objective);
+				for(int k=0;k<4;k++)
+				{
+					tempImgs.add(objectiveImages.get((int) currentLevel[i][5]+k));
+				}
+				objective.setObjectiveImages(tempImgs);
 				objectiveCount++;
 			}
 			if(currentLevel[i][0]==5.0){			//asteroids
@@ -84,6 +91,7 @@ public class Level
 				asteroid.setTFDS(currentLevel[i][7], currentLevel[i][8], currentLevel[i][9], currentLevel[i][10]);
 				SpaceMatter.Asteroids.add(asteroid);
 			}
+			tempImgs.clear();
 		}
 	}
 	public static void makePlayerShip(float xLoc, float yLoc)
@@ -91,6 +99,7 @@ public class Level
 		Spaceship ship =new Spaceship(xLoc,yLoc,1f,10f,shipImages.get(0));
 		SpaceMatter.getSpaceObjects().add(0,ship); //has to be at index 0 for some reason, I dunno yet
 		ArrayList<BufferedImage> tempImgs = new ArrayList<BufferedImage>();
+		
 		for(int k=0;k<4;k++)
 		{
 			tempImgs.add(shipImages.get((int) 0+k));
@@ -134,8 +143,16 @@ public class Level
 			 }
 			 for(int i=0;i<objectiveNames.length;i++)
 			 {
-				 BufferedImage objectiveImage = ImageIO.read(new File(imgDir+objectiveNames[i]+".png"));
-				 objectiveImages.add(objectiveImage);
+				 BufferedImage objectiveImage1 = ImageIO.read(new File(imgDir+objectiveNames[i]+"A.png"));
+				 BufferedImage objectiveImage2 = ImageIO.read(new File(imgDir+objectiveNames[i]+"B.png"));
+				 BufferedImage objectiveImage3 = ImageIO.read(new File(imgDir+objectiveNames[i]+"C.png"));
+				 BufferedImage objectiveImage4 = ImageIO.read(new File(imgDir+objectiveNames[i]+"D.png"));
+						 
+				 objectiveImages.add(objectiveImage1);
+				 objectiveImages.add(objectiveImage2);
+				 objectiveImages.add(objectiveImage3);
+				 objectiveImages.add(objectiveImage4);
+				 
 			 }
 			 for(int i=0;i<objectiveNames.length;i++)
 			 {
@@ -156,7 +173,7 @@ public class Level
 		levels.remove(0);
 		levels.add(0, newLevel);
 	}
-	public void loadLevels()
+	public void loadLevels() //object type,xloc,yloc,mass, radius,sub-type (which texture),...depends on the type 
 	{
 		levels.add(tempLevel);
 		float[][] level1 = {{4,200,400,1,20,0},

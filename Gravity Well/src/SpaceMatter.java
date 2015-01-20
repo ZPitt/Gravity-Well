@@ -42,8 +42,8 @@ public class SpaceMatter
 		xLast=xLoc;
 		yLast=yLoc;
 		m=mass;
-		r=radius;
 		isActive=true;
+		r=radius;
 		matterImage=img;
 		velocity = new Velocity(0,0);
 		t=0;
@@ -276,5 +276,9 @@ public class SpaceMatter
 	
 		float[] a = {(float)obj,pva[0][0],pva[1][0],m,r,t,velocity.getAngle(),velocity.getMag()};
 		return a;
+	}
+	public void update()
+	{
+		System.out.println("Parent Class Update");
 	}
 }

@@ -25,7 +25,7 @@ public class Spaceship extends SpaceMatter
 	}
 	
 	
-	public void updateForces(){
+	public void update(){
 		if(getActive()){
 			tempAccel = calculateForces();
 			setAccel(tempAccel[0],tempAccel[1]);
@@ -54,7 +54,9 @@ public class Spaceship extends SpaceMatter
 	
 	public void setShipImages(ArrayList<BufferedImage>	shipImgs)
 	{
-		shipImages=shipImgs;
+		for(int i=0;i<4;i++){
+			shipImages.add(shipImgs.get(i));
+		}
 	}
 	public void setCurrentImage(String movement)
 	{
