@@ -23,6 +23,10 @@ public class Level
 	public int currentLevelNum,objectiveCount;
 	BufferedImage img;
 	public final String imgDir = "Images/";
+	public final String imgDirO = "Images/Objectives/";
+	public final String imgDirG = "Images/Gates/";
+	public final String imgDirP = "Images/Planets/";
+	public final String imgDirS = "Images/Ships/";
 	public BufferedImage gravityWellImg,spaceShipImg,tempSpaceShipImg,currentSpaceShipImg,spaceShipMovingImg,spaceBackground1,planet1,currentPlanet1Img,tempPlanet1Img;
 	public String[] planetNames = {"Planet1"};
 	public String[] shipNames = {"SpaceShip","SpaceShip2"};
@@ -112,7 +116,7 @@ public class Level
 		 try{
 			 for(int i=0;i<planetNames.length;i++)
 			 {
-				 BufferedImage planetImage = ImageIO.read(new File(imgDir+planetNames[i]+".png"));
+				 BufferedImage planetImage = ImageIO.read(new File(imgDirP+planetNames[i]+".png"));
 				 planetImages.add(planetImage);
 			 }
 			 for(int i=0;i<moonNames.length;i++)
@@ -122,10 +126,10 @@ public class Level
 			 }
 			 for(int i=0;i<shipNames.length;i++)
 			 {
-				 BufferedImage shipImage = ImageIO.read(new File(imgDir+shipNames[i]+".png"));
-				 BufferedImage shipRightImage = ImageIO.read(new File(imgDir+shipNames[i]+"Right.png"));
-				 BufferedImage shipLeftImage = ImageIO.read(new File(imgDir+shipNames[i]+"Left.png"));
-				 BufferedImage shipMovingImage = ImageIO.read(new File(imgDir+shipNames[i]+"Moving.png"));
+				 BufferedImage shipImage = ImageIO.read(new File(imgDirS+shipNames[i]+".png"));
+				 BufferedImage shipRightImage = ImageIO.read(new File(imgDirS+shipNames[i]+"Right.png"));
+				 BufferedImage shipLeftImage = ImageIO.read(new File(imgDirS+shipNames[i]+"Left.png"));
+				 BufferedImage shipMovingImage = ImageIO.read(new File(imgDirS+shipNames[i]+"Moving.png"));
 				 shipImages.add(shipImage);
 				 shipImages.add(shipRightImage);
 				 shipImages.add(shipLeftImage);
@@ -138,15 +142,15 @@ public class Level
 			 }
 			 for(int i=0;i<gateNames.length;i++)
 			 {
-				 BufferedImage gateImage = ImageIO.read(new File(imgDir+gateNames[i]+".png"));
+				 BufferedImage gateImage = ImageIO.read(new File(imgDirG+gateNames[i]+".png"));
 				 gateImages.add(gateImage);
 			 }
 			 for(int i=0;i<objectiveNames.length;i++)
 			 {
-				 BufferedImage objectiveImage1 = ImageIO.read(new File(imgDir+objectiveNames[i]+"A.png"));
-				 BufferedImage objectiveImage2 = ImageIO.read(new File(imgDir+objectiveNames[i]+"B.png"));
-				 BufferedImage objectiveImage3 = ImageIO.read(new File(imgDir+objectiveNames[i]+"C.png"));
-				 BufferedImage objectiveImage4 = ImageIO.read(new File(imgDir+objectiveNames[i]+"D.png"));
+				 BufferedImage objectiveImage1 = ImageIO.read(new File(imgDirO+objectiveNames[i]+"A.png"));
+				 BufferedImage objectiveImage2 = ImageIO.read(new File(imgDirO+objectiveNames[i]+"B.png"));
+				 BufferedImage objectiveImage3 = ImageIO.read(new File(imgDirO+objectiveNames[i]+"C.png"));
+				 BufferedImage objectiveImage4 = ImageIO.read(new File(imgDirO+objectiveNames[i]+"D.png"));
 						 
 				 objectiveImages.add(objectiveImage1);
 				 objectiveImages.add(objectiveImage2);
@@ -154,7 +158,7 @@ public class Level
 				 objectiveImages.add(objectiveImage4);
 				 
 			 }
-			 for(int i=0;i<objectiveNames.length;i++)
+			 for(int i=0;i<asteroidNames.length;i++)
 			 {
 				 BufferedImage asteroidImage = ImageIO.read(new File(imgDir+asteroidNames[i]+".png"));
 				 asteroidImages.add(asteroidImage);
@@ -177,8 +181,8 @@ public class Level
 	{
 		levels.add(tempLevel);
 		float[][] level1 = {{4,200,400,1,20,0},
-						  	{1,200,300,900000,20,0},
-							{1,400,500,90000,20,0},
+						  	{1,200,300,900000,60,0},
+							{1,400,500,90000,60,0},
 							{2,100,100,1,20,0},
 							{3,500,500,1,20,1,0,0},
 							{5,250,550,1,15,0,0,120,800,100,130f}};

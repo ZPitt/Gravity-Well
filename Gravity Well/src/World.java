@@ -2,6 +2,8 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -21,29 +23,26 @@ import javax.swing.*;
 import org.imgscalr.Scalr;
 
 
-public class World extends JFrame implements ActionListener, KeyListener, MouseListener, MouseWheelListener
+public class World extends JFrame implements ActionListener, KeyListener, MouseListener, MouseWheelListener, ComponentListener
 {
 	static Toolkit tk = Toolkit.getDefaultToolkit();  
 	private final static int HEIGHT  =800;//(int)tk.getScreenSize().getHeight();
 	private final static int WIDTH = 800;//(int) tk.getScreenSize().getWidth();
 	final double GAME_HERTZ = 30.0; 	
-	private final int MENU_BUTTON_X = 350;
-	private final int MENU_BUTTON_Y = 550;
-	private final int SIMULATOR_BUTTON_X = 5;
-	private final int SIMULATOR_BUTTON_Y = 390;
-	private final int BUTTON_Y_GAP = 5;
-	private final int BUTTON_HEIGHT = 50;
-	private final int X_MOUSE_OFFSET = 2;
-	private final int Y_MOUSE_OFFSET = 26;
+	private final int X_MOUSE_OFFSET = 3;
+	private final int Y_MOUSE_OFFSET = 25;
 	public int stepCount=500;
-	
+    int updateCountPerSecond=0;
+    
 	public GameType currentGameType = new GameType();
 	
-	public static final int screenLocW = (int)java.awt.Toolkit.getDefaultToolkit().getScreenSize().getWidth()/2-WIDTH/2;//centers the height
-	public static final int screenLocH = (int)java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2-HEIGHT/2;//centers the width
+	public static int screenLocX = (int)java.awt.Toolkit.getDefaultToolkit().getScreenSize().getWidth()/2-WIDTH/2;//centers the height
+	public static int screenLocY = (int)java.awt.Toolkit.getDefaultToolkit().getScreenSize().getHeight()/2-HEIGHT/2;//centers the width
 	private int fps = 60;
 	private int frameCount = 0;
 	public int x,y,z,rad,mass,currentLevel;
+	public int movedOffsetX=0;
+	public int movedOffsetY=0;
 	
 	private boolean up,down,right,left,somethingSelected,running,paused,isPathing,simulationStarted;
 	
@@ -53,10 +52,6 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	public ArrayList<ImageIcon> buttonIcons = new ArrayList<ImageIcon>();
 	public ArrayList<JTextField> textFields = new ArrayList<JTextField>();
 	
-	
-	private JButton startButton1= new JButton();
-	private JButton startButton2 = new JButton();
-	private JButton menuButton = new JButton();
 	JButton optionsButton = new JButton();
     JButton simulatorButton = new JButton();
     JButton backButton1 = new JButton();
@@ -77,34 +72,24 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
     JButton addAsteroidButton = new JButton();
     
     JPanel cards;
-    private GamePanel currentCard = new GamePanel();
-	private GamePanel menuCard = new GamePanel();
-    private GamePanel gameCard = new GamePanel();
-    private GamePanel optionsCard = new GamePanel();
-    private GamePanel simulatorCard = new GamePanel();
-    private GamePanel levelSelectCard = new GamePanel();
-    private GamePanel previousCard = new GamePanel();
 
 	private JTextField massText = new JTextField(10);
 	private JTextField radiusText = new JTextField(10);
 	private JTextField xText = new JTextField(10);
 	private JTextField yText = new JTextField(10);
 	private JTextField typeText = new JTextField(10);
-    
-    final String MENU= "MENU";
-    final String SIMULATOR = "SIMULATOR";
-    final String OPTIONS = "OPTIONS";
-    final String GAME = "GAME";
-    final String LEVELSELECT = "LEVELSELECT";
-    final String BACK = "BACK";
-    public String currentName = "MENU";
-    public String previousName = "MENU";
+	
+	public InputManager IM = new InputManager();
+    public ComponentManager CM = new ComponentManager();
+    public AnimationManager AM = new AnimationManager();
+    public Manager M = new Manager();
+  
     
     public int[] pathX= new int[stepCount];
     public int[] pathY= new int[stepCount];
     public float[] tempX= new float[stepCount];
     public float[] tempY= new float[stepCount];
-    
+    GridBagLayout gblCenter = new GridBagLayout();
     public ViewPort viewPort = new ViewPort(0,0,WIDTH,HEIGHT);
     
     public BufferedImage gravityWellImg,spaceShipImg,tempSpaceShipImg,currentSpaceShipImg,spaceShipMovingImg,spaceBackground1,planet1,currentPlanet1Img,
@@ -130,13 +115,14 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		super("Gravity Well");
 		
 	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    setBounds(screenLocW,screenLocH,WIDTH, HEIGHT); //center it on the screen
+	    setBounds(screenLocX,screenLocY,WIDTH, HEIGHT); //center it on the screen
 	    
-		setResizable(false);
+		setResizable(true);
 	    setFocusable(true);
 		addKeyListener(this);
 		addMouseListener(this);
 		addMouseWheelListener(this);
+		addComponentListener(this);
 		
         addComponentToPane(this.getContentPane());
         
@@ -149,79 +135,9 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	      }
 	}
 	 public void addComponentToPane(Container pane) {
-		 
-		 	makeComponents();
-		 	
-	        menuCard.setLayout(null);
-	        simulatorCard.setLayout(null);
-	        gameCard.setLayout(null);
 	        
-	        menuCard.add(startButton1);
-	        menuCard.add(optionsButton);
-	        menuCard.add(simulatorButton);
-	        menuCard.setBackground(Color.BLACK);
-	        
-	        optionsCard.setBackground(Color.YELLOW);
-	        optionsCard.add(backButton1);
-	        
-	        levelSelectCard.setBackground(Color.GREEN);
-	        levelSelectCard.add(backButton2);
-	        levelSelectCard.add(startButton2);
-	        levelSelectCard.add(tempLevelButton);
-	        
-	        JPanel panel = new JPanel();
-	        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-	        JScrollPane scrollPane = new JScrollPane(panel);
-	        panel.setBackground(Color.BLACK);
-	        simulatorCard.add(backButton3);
-	        simulatorCard.add(runSimButton);
-	        simulatorCard.add(deleteButton);
-	        simulatorCard.add(resetButton);
-	        simulatorCard.add(stopButton);
-	        panel.add(addPlanetButton);
-	        panel.add(addMoonButton);
-	        panel.add(addEndGateButton);
-	        panel.add(addStartGateButton);
-	        panel.add(addObjectiveButton);
-	        panel.add(addAsteroidButton);
-	        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-	        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-	        scrollPane.setBounds(0, 400, 150,800);
-	        simulatorCard.add(scrollPane);
-	   
-	       
-	        gameCard.add(menuButton);
-	        gameCard.add(launchButton);
-	        gameCard.add(retryButton);
-	        gameCard.setBackground(Color.WHITE);
-	         
-	        //Create the panel that contains the "cards".
-	        cards = new JPanel(new CardLayout());
-	        cards.add(menuCard, MENU);
-	        cards.add(gameCard, GAME);
-	        cards.add(levelSelectCard,LEVELSELECT);
-	        cards.add(simulatorCard, SIMULATOR);
-	        cards.add(optionsCard, OPTIONS);
-	        
-	        
-	        cards.setSize(500,500);
-	         
-	        
-	        pane.add(cards, BorderLayout.CENTER);
-	        pane.setBounds(500, 500, 500, 500);
-	        loadImages();
+	        pane.add(CM.getCards(), BorderLayout.CENTER);
 	    } 
-	 public void loadImages()
-	 {
-		 try{
-			 gravityWellImg = ImageIO.read(new File(imgDir+"GravityLogo_5.png"));
-			 spaceBackground1 =ImageIO.read(new File(imgDir+"potentialBackground_1.png"));
-			 selectedCircle = ImageIO.read(new File(imgDir+"SelectionCircle.png"));
-		 }
-		 catch(IOException e){
-			 e.printStackTrace();
-		 }
-	 }
 	 public void levelStartUp(int whichLevel)
 		{
 			currentGameType.setGameType(0);
@@ -231,7 +147,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 			viewPort.setFocals(getStartGate().getLocX(),getStartGate().getLocY());
 			rescaleImages();
 		}
-		public void simulatorStartUp()
+	public void simulatorStartUp()
 		{
 			currentGameType.setGameType(1);
 			viewPort.setFocals(0,0);
@@ -239,171 +155,6 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 			levels.makeLevel(0);
 			rescaleImages();
 		}
-	 public void makeComponents()
-	 {
-		 textFields.add(massText);
-		 textFields.add(radiusText);
-		 textFields.add(xText);
-		 textFields.add(yText);
-		 textFields.add(typeText);
-
-		 buttonArray.add(addAsteroidButton);
-		 buttonArray.add(addEndGateButton);
-		 buttonArray.add(addMoonButton); //"ADD"
-		 buttonArray.add(addObjectiveButton);
-		 buttonArray.add(addPlanetButton);//"add"
-		 buttonArray.add(addStartGateButton);
-		 buttonArray.add(backButton1);
-		 buttonArray.add(backButton2);
-	     buttonArray.add(backButton3);
-	     buttonArray.add(deleteButton);
-	     buttonArray.add(launchButton);
-	     buttonArray.add(menuButton);
-	     buttonArray.add(optionsButton);
-	     buttonArray.add(resetButton);
-	     buttonArray.add(retryButton);
-	     buttonArray.add(runSimButton);
-	     buttonArray.add(simulatorButton);
-		 buttonArray.add(startButton1);
-	     buttonArray.add(startButton2);
-	     buttonArray.add(stopButton);
-	     buttonArray.add(tempLevelButton);
-	        
-	        for(int i=0;i<buttonArray.size();i++){
-	        	buttonArray.get(i).addActionListener(this);
-	        	buttonArray.get(i).setOpaque(false);
-	        	buttonArray.get(i).setContentAreaFilled(false);
-	        	buttonArray.get(i).setBorderPainted(false);
-	        	buttonArray.get(i).setFocusPainted(false);
-	        	buttonArray.get(i).setFocusable(false);
-	        	
-	        	ImageIcon icon = new ImageIcon(imgDir+imgNames[i]+"Button.png");
-	        	ImageIcon iconRO =new ImageIcon(imgDir+imgNames[i]+"ButtonRO.png");
-	        	buttonArray.get(i).setIcon(icon);
-	        	buttonArray.get(i).setRolloverIcon(iconRO);
-	        }
-	        
-	        startButton1.setBounds(MENU_BUTTON_X,MENU_BUTTON_Y,110,BUTTON_HEIGHT);
-	        optionsButton.setBounds(MENU_BUTTON_X-15,MENU_BUTTON_Y+(BUTTON_HEIGHT+BUTTON_Y_GAP),150,BUTTON_HEIGHT);
-	        simulatorButton.setBounds(MENU_BUTTON_X-25,MENU_BUTTON_Y+(BUTTON_Y_GAP+BUTTON_HEIGHT)*2,160,BUTTON_HEIGHT);
-	        backButton3.setBounds(SIMULATOR_BUTTON_X-15,SIMULATOR_BUTTON_Y-50,125,BUTTON_HEIGHT);
-	        runSimButton.setBounds(SIMULATOR_BUTTON_X+150,725,125,BUTTON_HEIGHT);
-	        deleteButton.setBounds(SIMULATOR_BUTTON_X+375,725,125,BUTTON_HEIGHT);
-	        launchButton.setBounds(345,725,125,50);
-	        menuButton.setBounds(345, 10,125,50);
-	        retryButton.setBounds(345,345,125,50);
-	        stopButton.setBounds(SIMULATOR_BUTTON_X+150,725,125,BUTTON_HEIGHT);
-	        resetButton.setBounds(SIMULATOR_BUTTON_X+275,725,125,BUTTON_HEIGHT);
-	        
-	        
-	        retryButton.setVisible(false);
-	        resetButton.setVisible(false);
-	        stopButton.setVisible(false);
-	        
-	        
-	       for(int i=0;i<textFields.size();i++)
-	       {
-	    	   textFields.get(i).addKeyListener(this);
-	    	   textFields.get(i).setBounds(20,20+75*i,100,20);
-	    	   textFields.get(i).setVisible(false);
-	    	   simulatorCard.add(textFields.get(i));
-	    	   
-	    	   textFields.get(i).setOpaque(false);
-	    	   textFields.get(i).setBorder(javax.swing.BorderFactory.createEmptyBorder());
-	    	   Font font = new Font("Gloucester MT Extra Condensed", Font.BOLD,15);
-               
-               //set font for JTextField
-	    	   textFields.get(i).setFont(font);
-	    	   textFields.get(i).setForeground(Color.YELLOW);
-	       }
-	        
-	 }
-	public void actionPerformed(ActionEvent e) {
-		 Object s = e.getSource();
-		 if(s==menuButton){
-			 setGameModeInactive();
-			 previousName = currentName;
-			 currentName = MENU;
-			  previousCard = currentCard;
-	    	  currentCard=menuCard;}
-	     if(s==startButton1){
-	    	 previousName = currentName;
-	    	 currentName = LEVELSELECT;
-	    	  previousCard = currentCard;
-	    	  currentCard=levelSelectCard; }
-	     if(s==simulatorButton){
-	    	 simulatorStartUp();
-	    	 previousName = currentName;
-	    	 currentName = SIMULATOR;
-	    	  previousCard = currentCard;
-	    	  currentCard=simulatorCard; }
-	     if(s==optionsButton){
-	    	 previousName = currentName;
-	    	 currentName = OPTIONS;
-	    	  previousCard = currentCard;
-	    	  currentCard=gameCard; }
-	     if(s==startButton2){
-	    	 currentLevel = 1;
-	    	 levelStartUp(currentLevel);
-	    	 previousName = currentName;
-	    	 currentName = GAME;
-	    	  previousCard = currentCard;
-	    	  currentCard=gameCard; }
-	     if(s==backButton1||s==backButton2||s==backButton3){
-	    	 setGameModeInactive();
-	    	 currentName = previousName;
-	    	  currentCard=previousCard; }
-	      //if(s==startButton2 || s==menuButton || s==simulatorButton || s==backButton3)
-	      {
-	    	  
-	      }
-	      if(s==backButton3){
-	    	  currentGameType.setGameState(GameType.VIEWER);
-	    	  updateSimArray();
-	      }
-	      if(s==addPlanetButton)
-	    	  addPlanet();
-	      if(s==addEndGateButton)
-	    	  addEndGate();
-	      if(s==addStartGateButton)
-	    	  addStartGate();
-	      if(s==addObjectiveButton)
-	    	  addObjective();
-	      if(s==addAsteroidButton)
-	    	  addAsteroid();
-	      if(s==launchButton)
-	    	  launchSequence();
-	      if(s==retryButton)
-	    	  restartLevel();
-	      if(s==deleteButton)
-	      {
-	    	  deleteSelected();
-	      }
-	      if(s==runSimButton)
-	      {
-	    	 runSimulation();
-	      }
-	      if(s==stopButton)
-	      {
-	    	  stopPause();
-	      }
-	      if(s==resetButton)
-	      {
-	    	  resetLevel();
-	      }
-	      if(s==tempLevelButton)
-	      {
-	    	  levelStartUp(0);
-	    	  currentLevel=0;
-	    	  previousName = currentName;
-		      currentName = GAME;
-		      previousCard = currentCard;
-		      currentCard=gameCard;
-	      }
-	      CardLayout cl = (CardLayout)(cards.getLayout());
-	      cl.show(cards,currentName);
-	      currentCard.repaint();
-	}
 	public void mouseReleased(MouseEvent e) {
 		if(currentGameType.isActive())
 			 currentGameType.setDragging(false);
@@ -637,6 +388,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	public void mouseClicked(MouseEvent e) {
 		int xPoint = (int) ((e.getX()-X_MOUSE_OFFSET));
 		int yPoint = (int) ((e.getY()-Y_MOUSE_OFFSET));
+		System.out.println(xPoint+", "+X_MOUSE_OFFSET);
+		System.out.println(yPoint+", "+Y_MOUSE_OFFSET);
 		float worldPointX =  viewPort.translateToWorldCooridinatesX((float)xPoint);
 		float worldPointY =  viewPort.translateToWorldCooridinatesY((float)yPoint);
 		
@@ -788,6 +541,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	      {
 	         double now = System.nanoTime();
 	         int updateCount = 0;
+	     
 	         
 	         if (!paused)
 	         {
@@ -803,13 +557,14 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	               lastUpdateTime = now - TIME_BETWEEN_UPDATES;
 	            }
 	            float interpolation = Math.min(1.0f, (float) ((now - lastUpdateTime) / TIME_BETWEEN_UPDATES) ); //Render. To do so, we need to calculate interpolation for a smooth render.
-	            drawGame(interpolation);
+	            CM.drawGame(interpolation);
 	            lastRenderTime = now;
 
 	            int thisSecond = (int) (lastUpdateTime / 1000000000);  //Update the frames we got.
 	            if (thisSecond > lastSecondTime)
 	            {
 	               System.out.println("NEW SECOND " + thisSecond + " " + frameCount);
+	               
 	               fps = frameCount;
 	               frameCount = 0;
 	               lastSecondTime = thisSecond;
@@ -872,6 +627,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 						   
 						   if(target instanceof Planet || target instanceof Asteroid){
 							   currentGameType.setGameState(GameType.LOST);
+							   //System.out.println(interpolation);
 							   lost();
 						   }
 						   else if(target instanceof EndGate){
@@ -1011,12 +767,7 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 	          if(left){
 	        	  spaceship.incrementRotation(-1);}
 	   }
-	   private void drawGame(float interpolation)
-	   {
-	      currentCard.setInterpolation(interpolation);
-	      currentCard.repaint();
-	      
-	   }
+	   
 	public void setVisibleStats(boolean b)
 	{
 		somethingSelected=b;
@@ -1073,125 +824,8 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 		rescaleImages();
 		rescaleIcons();
 	}
-	private class GamePanel extends JPanel 
-	   {
-	      float interpolation;
-	      public GamePanel()
-	      {
-	    	  setFocusable( true ); 
-	      }
-	      public void setInterpolation(float interp)
-	      {
-	         interpolation = interp;
-	      }
-	      public void paintComponent(Graphics g)
-	      {
-	    	 Graphics2D g2D = (Graphics2D)g;
-	    	 g.drawImage(spaceBackground1,-1400-Math.round(viewPort.getX()/10),-700-Math.round(viewPort.getY()/10),null);
-	    	 
-	    	 if(running){
-	    		 if((currentGameType.isActive())){
-	    			 if(currentGameType.getGameType()==1)
-	    				 drawSimulatorValues(g);
-	    			 drawViewPort(g2D);}
-	    		 else if(currentName.equals(MENU))
-	    			 drawMenu(g);
-	     	}
-	      }
-	     public void drawSimulatorValues(Graphics g)
-	     {
-	    	if(somethingSelected){
-	    	 g.setColor(Color.WHITE);
-	    	 g.drawString("Mass",30,10);
-	    	 g.drawString("Radius",30,85);
-	    	 g.drawString("X Location",30,160);
-	    	 g.drawString("Y Location",30,235);
-	    	 g.drawString("Type",30,310);
-	    	}
-	     }
-	     public void drawMenu(Graphics g)
-	     {
-	    	 g.drawImage(gravityWellImg, 0, 0, null);
-	     }
-	     public void drawViewPort(Graphics2D g)
-	     {
-	    	 
-	    	 for(int i=0;i<SpaceMatter.getSpaceObjects().size();i++)
-	 			{
-	    		 	SpaceMatter matter = SpaceMatter.getSpaceObjects().get(i);
-	    		 	
-	    		 	worldX = (matter.differenceX()*interpolation + matter.getLastX());
-	    		 	worldY = (matter.differenceY()*interpolation + matter.getLastY());
-	    		 	rad =(int)((matter.getRadius())/viewPort.getZoom());
-	    		 	
-//	    		 
-	    		 	if(matter instanceof Spaceship&&currentGameType.getGameState().equals(GameType.PLAYING))//sets focals onto the ship (400,400)
-	    		 		viewPort.setFocals(worldX,worldY);
-	    		 	
-	    		 	if(viewPort.existInViewPort(worldX, worldY,rad))
-	    		 	{
-	    		 		x= viewPort.translateToViewPortX(worldX); //translates the world coordinates into screen locations
-		 				y= viewPort.translateToViewPortY(worldY);
-		 				
-		 				matterImage = matter.getImage();
-		 				
-		 				if(matter.checkSelected() && currentGameType.getGameState().equals(GameType.VIEWER)){
-    		 				g.drawImage(tempSelectedCircle,x-rad-4,y-rad-4,null);
-    		 			}
-		 				
-	    		 		if(matter instanceof Planet){
-	    		 			g.drawImage(matterImage,x-rad,y-rad,null);
-	    		 			
-	    		 		}
-	    		 		else if(matter instanceof Spaceship)
-	    		 		{
-	    		 			if(currentGameType.getGameType()==0){
-				            	 g.setColor(Color.WHITE);
-				            	 g.drawPolyline(((Spaceship) matter).getPathX(viewPort), ((Spaceship) matter).getPathY(viewPort), 
-				            			 ((Spaceship) matter).getPathX(viewPort).length);
-				             }
-	    		 			 AffineTransform at = new AffineTransform();
-				             at.translate(x,y);
-				             at.rotate(matter.getRotation());
-				             at.translate(-matter.getCurrentImageSize()/2,-matter.getCurrentImageSize()/2);
-				             g.drawImage(matterImage, at, null);
-				             
-	    		 		}
-	    		 		else 
-	    		 		{
-	    		 			g.drawImage(matterImage,x-rad,y-rad,null);	
-	    		 		}
-	    		 	
-	    		 	}
-	    		 	drawVelocityLines(g, matter,worldX,worldY);
-	 		 }
-	    	 if(currentGameType.getGameType()==1&&getStartGate()!=null){
-	    		 	g.setColor(Color.GREEN);
-	    		 	g.drawPolyline(pathX,pathY,pathX.length);
-	    		 	
-	    		 }
-	    	 if(currentGameType.getGameState().equals(GameType.LOST)){
-	    		 if(currentGameType.getGameType()==0){
-	    			 g.setColor(new Color(192,192,192,200));
-	    			 g.fillRect(0, 0, World.WIDTH, World.HEIGHT);
-	    		 }
-	    		 else{
-	    			 
-	    		 }
-	    	 }
-	    	 else if(currentGameType.getGameState().equals(GameType.WON)){
-	    		 if(currentGameType.getGameType()==0){
-		    		 g.setColor(new Color(53,255,153,200));
-			    	 g.fillRect(0, 0, World.WIDTH, World.HEIGHT);
-	    		 }
-	    		 else{
-	    			 
-	    		 }
-	    	 }
-	    	 g.rotate(0);
-	         frameCount++;
-	     }
-	   }
+	
+	   
 	public void drawVelocityLines(Graphics g, SpaceMatter matter,float worldX, float worldY)
 	{
 		x= viewPort.translateToViewPortX(worldX); //translates the world coordinates into screen locations
@@ -1206,6 +840,37 @@ public class World extends JFrame implements ActionListener, KeyListener, MouseL
 						viewPort.translateToViewPortY(yf));
 			}
 		}
+		
+	}
+
+	@Override
+	public void componentHidden(ComponentEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void componentMoved(ComponentEvent e) {
+		
+		//screenLocX=(int)e.getComponent().getLocationOnScreen().getX();
+		//screenLocY=(int)e.getComponent().getLocationOnScreen().getY();
+	}
+
+	@Override
+	public void componentResized(ComponentEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void componentShown(ComponentEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
 		
 	}
 }

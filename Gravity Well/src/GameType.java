@@ -38,8 +38,8 @@ public class GameType {
 		   Point b = a.getLocation();
 		   xMouseLast = xMouse;
 		   yMouseLast = yMouse;
-		   xMouse = (int) b.getX()-World.screenLocW-2;
-		   yMouse = (int) b.getY()-World.screenLocH-26;
+		   xMouse = (int) b.getX()-World.screenLocX-3;
+		   yMouse = (int) b.getY()-World.screenLocY-25;
 		   diffX=(xMouse-xMouseLast)*zoomFactor;
 		   diffY=(yMouse-yMouseLast)*zoomFactor;
 		   return new float[] {diffX,diffY};
